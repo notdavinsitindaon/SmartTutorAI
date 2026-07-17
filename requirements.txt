@@ -1,0 +1,9 @@
+gradio>=4.0.0
+groq>=0.9.0
+tavily-python
+sentence-transformers
+chromadb
+edge-tts
+pydantic
+python-dotenv
+beautifulsoup4
