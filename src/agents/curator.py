@@ -2,16 +2,16 @@ import os
 import re
 from tavily import TavilyClient
 from bs4 import BeautifulSoup
-from src.utils.config import CHUNK_SIZE, CHUNK_OVERLAP
+from src.utils.config import CHUNK_SIZE, CHUNK_OVERLAP, get_api_key
 
 _tavily_client = None
 
 def get_tavily_client():
     global _tavily_client
     if _tavily_client is None:
-        api_key = os.environ.get("TAVILY_API_KEY")
+        api_key = get_api_key("TAVILY_API_KEY")
         if not api_key:
-            raise ValueError("TAVILY_API_KEY belum diisi di file .env")
+            raise ValueError("TAVILY_API_KEY belum diisi di Secrets/Env")
         _tavily_client = TavilyClient(api_key=api_key)
     return _tavily_client
 

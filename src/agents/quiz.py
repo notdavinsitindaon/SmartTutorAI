@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel, Field
 from groq import Groq
 from src.rag.database import retrieve_context
-from src.utils.config import FALLBACK_MODELS, QUIZ_MAX_TOKENS
+from src.utils.config import FALLBACK_MODELS, QUIZ_MAX_TOKENS, get_api_key
 
 # Define the structured output format using Pydantic
 class QuizOption(BaseModel):
@@ -26,9 +26,9 @@ _groq_client = None
 def get_client():
     global _groq_client
     if _groq_client is None:
-        api_key = os.environ.get("GROQ_API_KEY")
+        api_key = get_api_key("GROQ_API_KEY")
         if not api_key:
-            raise ValueError("GROQ_API_KEY belum diisi di file .env")
+            raise ValueError("GROQ_API_KEY belum diisi di Secrets/Env")
         _groq_client = Groq(api_key=api_key)
     return _groq_client
 

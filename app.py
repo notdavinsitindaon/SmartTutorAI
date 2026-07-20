@@ -124,14 +124,15 @@ with tab3:
         generate_btn = st.button("Buat Kuis", type="primary", use_container_width=True)
         
     if generate_btn and quiz_topic:
-        with st.spinner("⏳ Sedang meracik kuis dan merekam suara guru... Mohon tunggu..."):
+        with st.status("⏳ *Sedang meracik kuis dan merekam suara guru... Mohon tunggu sekitar 5-10 detik.*", expanded=True) as status:
             try:
                 from src.agents.quiz import generate_quiz
                 from src.utils.tts import save_audio
                 
+                st.write("Menganalisis materi kuis...")
                 quiz_data = generate_quiz(quiz_topic)
                 if isinstance(quiz_data, str):
-                    st.error(f"Error: {quiz_data}")
+                    status.update(label=f"Error: {quiz_data}", state="error")
                 else:
                     st.session_state.quiz_data = quiz_data.model_dump()
                     st.session_state.quiz_submitted = False
@@ -145,15 +146,18 @@ with tab3:
                         for opt in q.options:
                             spoken_text += f"Pilihan {opt.label}: {opt.text}. "
                             
+                    
+                    st.write("Merekam suara guru untuk membacakan soal...")
                     audio_dir = os.path.join(tempfile.gettempdir(), "audio")
                     os.makedirs(audio_dir, exist_ok=True)
                     audio_path = os.path.join(audio_dir, "quiz_voice.mp3")
                     save_audio(spoken_text, audio_path)
                     
                     st.session_state.quiz_audio_initial = audio_path
+                    status.update(label="✅ Kuis berhasil diracik!", state="complete")
                     
             except Exception as e:
-                st.error(f"Terjadi Kesalahan: {str(e)}")
+                status.update(label=f"Terjadi Kesalahan: {str(e)}", state="error")
                 
     # Display Quiz if data exists
     if st.session_state.quiz_data:
@@ -172,13 +176,14 @@ with tab3:
             submit_quiz = st.form_submit_button("Submit Jawaban", type="primary")
             
         if submit_quiz:
-            from src.utils.tts import save_audio
-            st.session_state.quiz_submitted = True
-            
-            score = 0
-            total = len(st.session_state.quiz_data['questions'])
-            spoken_result = ""
-            md_result = "### Hasil Kuis Anda\n\n"
+            with st.status("⏳ *Menghitung skor dan merekam evaluasi guru... Mohon tunggu sekitar 5 detik.*", expanded=True) as status:
+                from src.utils.tts import save_audio
+                st.session_state.quiz_submitted = True
+                
+                score = 0
+                total = len(st.session_state.quiz_data['questions'])
+                spoken_result = ""
+                md_result = "### Hasil Kuis Anda\n\n"
             
             for i in range(total):
                 q = st.session_state.quiz_data['questions'][i]
@@ -204,12 +209,14 @@ with tab3:
             
             st.session_state.quiz_score_md = md_result
             
+            st.write("Merekam evaluasi audio guru...")
             audio_dir = os.path.join(tempfile.gettempdir(), "audio")
             os.makedirs(audio_dir, exist_ok=True)
             audio_result_path = os.path.join(audio_dir, "quiz_result.mp3")
             save_audio(spoken_result, audio_result_path)
             
             st.session_state.quiz_audio_result = audio_result_path
+            status.update(label="✅ Penilaian selesai!", state="complete")
             
             st.rerun() # Refresh to show results outside the form
             
