@@ -25,10 +25,13 @@ def get_client():
         _groq_client = Groq(api_key=api_key)
     return _groq_client
 
-def answer_question(question: str):
+def answer_question(question: str, history: list = None):
     """
-    Stream answers directly using Groq SDK.
+    Stream answers directly using Groq SDK, with conversation memory.
     """
+    if history is None:
+        history = []
+        
     context = retrieve_context(question)
     
     from src.agents.curator import quick_web_search
@@ -51,15 +54,16 @@ def answer_question(question: str):
     client = get_client()
     last_error = None
     
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    messages.extend(history)
+    messages.append({"role": "user", "content": prompt})
+    
     for model_name in FALLBACK_MODELS:
         try:
             got_response = False
             stream = client.chat.completions.create(
                 model=model_name,
-                messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": prompt}
-                ],
+                messages=messages,
                 temperature=TEMPERATURE,
                 max_completion_tokens=MAX_TOKENS,
                 stream=True,

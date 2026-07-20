@@ -1,3 +1,4 @@
+import os
 import uuid
 import chromadb
 from src.rag.embedding import get_embedding_model
@@ -6,9 +7,12 @@ from src.utils.config import MAX_CONTEXT_CHARS
 _client = None
 _collection = None
 
+# HF Spaces: app directory is read-only, use /tmp instead
+_db_path = "/tmp/vectordb" if os.environ.get("SPACE_ID") else "vectordb"
+
 def _init_db():
     global _client, _collection
-    _client = chromadb.PersistentClient(path="vectordb")
+    _client = chromadb.PersistentClient(path=_db_path)
     _collection = _client.get_or_create_collection(name="smart_tutor")
 
 def clear_database():
