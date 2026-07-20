@@ -7,12 +7,10 @@ from src.utils.config import MAX_CONTEXT_CHARS
 _client = None
 _collection = None
 
-# HF Spaces: app directory is read-only, use /tmp instead
-_db_path = "/tmp/vectordb" if os.environ.get("SPACE_ID") else "vectordb"
-
 def _init_db():
     global _client, _collection
-    _client = chromadb.PersistentClient(path=_db_path)
+    # Use EphemeralClient (in-memory) to prevent read-only DB errors on Cloud platforms
+    _client = chromadb.EphemeralClient()
     _collection = _client.get_or_create_collection(name="smart_tutor")
 
 def clear_database():

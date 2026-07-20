@@ -1,4 +1,5 @@
 import os
+import tempfile
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -144,9 +145,9 @@ with tab3:
                         for opt in q.options:
                             spoken_text += f"Pilihan {opt.label}: {opt.text}. "
                             
-                    audio_dir = "/tmp/audio" if os.environ.get("SPACE_ID") else "audio"
+                    audio_dir = os.path.join(tempfile.gettempdir(), "audio")
                     os.makedirs(audio_dir, exist_ok=True)
-                    audio_path = f"{audio_dir}/quiz_voice.mp3"
+                    audio_path = os.path.join(audio_dir, "quiz_voice.mp3")
                     save_audio(spoken_text, audio_path)
                     
                     st.session_state.quiz_audio_initial = audio_path
@@ -203,9 +204,9 @@ with tab3:
             
             st.session_state.quiz_score_md = md_result
             
-            audio_dir = "/tmp/audio" if os.environ.get("SPACE_ID") else "audio"
+            audio_dir = os.path.join(tempfile.gettempdir(), "audio")
             os.makedirs(audio_dir, exist_ok=True)
-            audio_result_path = f"{audio_dir}/quiz_result.mp3"
+            audio_result_path = os.path.join(audio_dir, "quiz_result.mp3")
             save_audio(spoken_result, audio_result_path)
             
             st.session_state.quiz_audio_result = audio_result_path
